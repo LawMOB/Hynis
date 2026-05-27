@@ -194,8 +194,8 @@ void registerOpenHandler(JNIEnv *env) {
     (*env)->RegisterNatives(env, cls, peerOpenMethods, 2);
 }
 
-// JNI_OnLoad
-void JNI_OnLoadGLFW() {
+// JNI_OnLoadGLFW
+JNIEXPORT void JNICALL Java_org_lwjgl_glfw_GLFW_nativeInitializeGLFWNativeBridge(__attribute__((unused)) JNIEnv* env, __attribute__((unused)) jclass clazz) {
     vmGlfwClass = (*runtimeJNIEnvPtr)->NewGlobalRef(runtimeJNIEnvPtr, (*runtimeJNIEnvPtr)->FindClass(runtimeJNIEnvPtr, "org/lwjgl/glfw/GLFW"));
     method_internalWindowSizeChanged = (*runtimeJNIEnvPtr)->GetStaticMethodID(runtimeJNIEnvPtr, vmGlfwClass, "internalWindowSizeChanged", "(JII)V");
     jfieldID field_keyDownBuffer = (*runtimeJNIEnvPtr)->GetStaticFieldID(runtimeJNIEnvPtr, vmGlfwClass, "keyDownBuffer", "Ljava/nio/ByteBuffer;");
@@ -211,7 +211,6 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     registerOpenHandler(env);
     if (!getenv("POJAV_SKIP_JNI_GLFW")) {
         runtimeJNIEnvPtr = env;
-        JNI_OnLoadGLFW();
     }
 
     return JNI_VERSION_1_4;

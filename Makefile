@@ -55,8 +55,8 @@ BOOTJDK     ?= $(shell /usr/libexec/java_home -v 1.8)/bin
 $(warning Building on macOS.)
 else
 IOS         := 1
-SDKPATH     ?= /usr/share/SDKs/iPhoneOS.sdk
-BOOTJDK     ?= /usr/lib/jvm/java-8-openjdk/bin
+SDKPATH     ?= /var/jb/usr/share/SDKs/iPhoneOS.sdk
+BOOTJDK     ?= /var/jb/usr/lib/jvm/java-8-openjdk/bin
 ifeq ($(shell test "$(OSVER)" -gt 14; echo $$?),0)
 PREFIX      ?= /var/jb/
 else

@@ -499,6 +499,10 @@ public class GLFW
     /* volatile */ public static GLFWWindowRefreshCallback mGLFWWindowRefreshCallback;
     /* volatile */ public static GLFWWindowSizeCallback mGLFWWindowSizeCallback;
 
+    public static GLFWPreeditCallback mGLFWPreeditCallback;
+    public static GLFWIMEStatusCallback mGLFWIMEStatusCallback;
+    public static GLFWPreeditCandidateCallback mGLFWPreeditCandidateCallback;
+
     volatile public static int mGLFWWindowWidth, mGLFWWindowHeight;
 
     private static GLFWGammaRamp mGLFWGammaRamp;
@@ -512,9 +516,10 @@ public class GLFW
     public static final ByteBuffer keyDownBuffer = ByteBuffer.allocateDirect(317);
     public static long mainContext = 0;
 
+    private static native void nativeInitializeGLFWNativeBridge();
     static {
         try {
-            System.load(System.getenv("BUNDLE_PATH") + "/PojavPatch");
+            nativeInitializeGLFWNativeBridge();
         } catch (UnsatisfiedLinkError e) {
             e.printStackTrace();
         }
@@ -779,6 +784,28 @@ public class GLFW
         return lastCallback;
     }
 
+    public static GLFWPreeditCallback glfwSetPreeditCallback(@NativeType("GLFWwindow *") long window, @Nullable @NativeType("GLFWpreeditfun") GLFWPreeditCallbackI cbfun) {
+        GLFWPreeditCallback lastCallback = mGLFWPreeditCallback;
+        if (cbfun == null) mGLFWPreeditCallback = null;
+        else mGLFWPreeditCallback = GLFWPreeditCallback.create(cbfun);
+
+        return lastCallback;
+    }
+    public static GLFWIMEStatusCallback glfwSetIMEStatusCallback(@NativeType("GLFWwindow *") long window, @NativeType("GLFWimestatusfun") @Nullable GLFWIMEStatusCallbackI cbfun) {
+        GLFWIMEStatusCallback lastCallback = mGLFWIMEStatusCallback;
+        if (cbfun == null) mGLFWIMEStatusCallback = null;
+        else mGLFWIMEStatusCallback = GLFWIMEStatusCallback.create(cbfun);
+
+        return lastCallback;
+    }
+    public static GLFWPreeditCandidateCallback glfwSetPreeditCandidateCallback(@NativeType("GLFWwindow *") long window, @NativeType("GLFWpreeditcandidatefun") @Nullable GLFWPreeditCandidateCallbackI cbfun) {
+        GLFWPreeditCandidateCallback lastCallback = mGLFWPreeditCandidateCallback;
+        if (cbfun == null) mGLFWPreeditCandidateCallback = null;
+        else mGLFWPreeditCandidateCallback = GLFWPreeditCandidateCallback.create(cbfun);
+
+        return lastCallback;
+    }
+
     public static GLFWWindowSizeCallback glfwSetWindowSizeCallback(@NativeType("GLFWwindow *") long window, @Nullable @NativeType("GLFWwindowsizefun") GLFWWindowSizeCallbackI cbfun) {
         GLFWWindowSizeCallback lastCallback = mGLFWWindowSizeCallback;
         if (cbfun == null) mGLFWWindowSizeCallback = null;
@@ -807,6 +834,10 @@ public class GLFW
 
     public static int glfwGetPlatform() {
         return GLFW_PLATFORM_X11;
+    }
+
+    public static boolean glfwPlatformSupported(int platform) {
+        return platform == GLFW_PLATFORM_X11;
     }
 
     @NativeType("GLFWwindow *")
@@ -1088,7 +1119,9 @@ public class GLFW
     public static void glfwPostEmptyEvent() {}
 
     public static int glfwGetInputMode(@NativeType("GLFWwindow *") long window, int mode) {
-        return internalGetWindow(window).inputModes.get(mode);
+        // FIXME: Minecraft 26.1+ does not send char from keyboard
+        Integer input = internalGetWindow(window).inputModes.get(mode);
+        return input != null ? input : 0;
     }
 
     public static void glfwSetInputMode(@NativeType("GLFWwindow *") long window, int mode, int value) {
