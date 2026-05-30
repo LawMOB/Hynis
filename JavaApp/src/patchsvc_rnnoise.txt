@@ -1,2 +1,0 @@
-Agent-Class: com.congcq.patchrnnoise.PatchRNNoise
-Premain-Class: com.congcq.patchrnnoise.PatchRNNoise

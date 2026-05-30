@@ -220,6 +220,14 @@
               @"icon": @"mic",
               @"type": self.typeSwitch
             },
+            @{@"key": @"fix_simple_voice_chat_mod",
+              @"hasDetail": @YES,
+              @"icon": @"mic",
+              @"type": self.typeSwitch,
+              @"enableCondition": ^BOOL() {
+                  return getPrefBool(@"video.allow_microphone") && whenNotInGame();
+              }
+            }
         ], @[
             // Control settings
             @{@"icon": @"gamecontroller"},

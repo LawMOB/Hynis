@@ -20,7 +20,7 @@ public class Denoiser implements AutoCloseable {
             }
             // instead of loading librnnoise4j inside the simple voice chat mod that corrupt on ios
             // we redirect it to load librnnoise4j from App Frameworks
-            System.load(System.getenv("BUNDLE_PATH") + "/Frameworks/librnnoise4j.dylib");
+            System.load(System.getenv("BUNDLE_PATH") + "/Frameworks/svc/librnnoise4j.dylib");
             if (weights == null) {
                 try (InputStream in = Denoiser.class.getResourceAsStream(WEIGHTS_PATH)) {
                     if (in == null) {

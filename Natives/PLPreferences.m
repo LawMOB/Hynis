@@ -22,10 +22,11 @@
             @"resolution": @(100),
             @"max_framerate": @YES,
             @"performance_hud": @NO,
-            @"fullscreen_airplay": @YES,
+            @"fullscreen_airplay": @NO,
             @"silence_other_audio": @NO,
             @"silence_with_switch": @NO,
-            @"allow_microphone": @NO
+            @"allow_microphone": @NO,
+            @"fix_simple_voicechat_mod": @NO
         }.mutableCopy,
         @"control": @{
             @"default_ctrl": @"default.json",
