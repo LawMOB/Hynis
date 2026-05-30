@@ -42,6 +42,12 @@ $(OUTPUTDIR)/patchjna_agent.jar: $(CLASSES)
 	@echo "Creating $@"
 	@$(BOOTJDK)/jar -cfm $@ $(SOURCEDIR)/patchjna_agent.txt -C $(basename $@) .
 
+$(OUTPUTDIR)/patchsvc_rnnoise.jar: $(CLASSES)
+	@set -e
+	@mv $(basename $@)/de/maxhenkel/rnnoise4j/Denoiser.class $(basename $@)/de/maxhenkel/rnnoise4j/Denoiser.class.patch
+	@echo "Creating $@"
+	@$(BOOTJDK)/jar -cfm $@ $(SOURCEDIR)/patchsvc_rnnoise.txt -C $(basename $@) .
+
 clean:
 	rm -rf $(OUTPUTDIR)
 
