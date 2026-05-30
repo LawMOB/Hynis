@@ -36,7 +36,7 @@ jobs:
       - name: Upload regular tipa
         uses: actions/upload-artifact@v4
         with:
-          name: com.congcq.hynis
+          name: com.congcq.hynis-trollstore
           path: artifacts/com.congcq.hynis-*.tipa
 
       - name: Upload slimmed ipa
@@ -48,7 +48,7 @@ jobs:
       - name: Upload slimmed tipa
         uses: actions/upload-artifact@v4
         with:
-          name: com.congcq.hynis.slimmed
+          name: com.congcq.hynis.slimmed-trollstore
           path: artifacts/com.congcq.hynis.slimmed-*.tipa
 
       - name: Upload jre
