@@ -102,7 +102,7 @@ bool init_checkForJailbreak() {
 
 void init_logDeviceAndVer(char *argument) {
     // PojavLauncher version
-    NSLog(@"[Pre-Init] Pojav Patch INIT!");
+    NSLog(@"[Pre-Init] Hynis INIT!");
     NSLog(@"[Pre-Init] Version: %@-%s", NSBundle.mainBundle.infoDictionary[@"CFBundleShortVersionString"], CONFIG_TYPE);
     NSLog(@"[Pre-Init] Commit: %s (%s)", CONFIG_COMMIT, CONFIG_BRANCH);
     

@@ -100,7 +100,7 @@ public final class Tools {
         varArgMap.put("user_properties", "{}");
         varArgMap.put("user_type", "mojang");
         varArgMap.put("version_name", versionName);
-        varArgMap.put("version_type", "Pojav Patch"); //versionInfo.type); // soon
+        varArgMap.put("version_type", "Hynis"); //versionInfo.type); // soon
         varArgMap.put("natives_directory", System.getProperty("java.library.path"));
 
         List<String> minecraftArgs = new ArrayList<String>();
