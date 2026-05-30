@@ -1,8 +1,5 @@
 package de.maxhenkel.rnnoise4j;
 
-//import de.maxhenkel.nativeutils.NativeInitializer;
-//import de.maxhenkel.nativeutils.UnknownPlatformException;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,11 +13,13 @@ public class Denoiser implements AutoCloseable {
 
     private long pointer;
 
-    public Denoiser() throws IOException, UnknownPlatformException {
+    public Denoiser() throws IOException {
         synchronized (Denoiser.class) {
             if (loadError != null) {
                 throw new IOException(loadError.getMessage());
             }
+            // instead of loading librnnoise4j inside the simple voice chat mod that corrupt on ios
+            // we redirect it to load librnnoise4j from App Frameworks
             System.load(System.getenv("BUNDLE_PATH") + "/Frameworks/librnnoise4j.dylib");
             if (weights == null) {
                 try (InputStream in = Denoiser.class.getResourceAsStream(WEIGHTS_PATH)) {
