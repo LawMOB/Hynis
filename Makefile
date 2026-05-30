@@ -12,7 +12,6 @@ DETECTARCH  := $(shell uname -m)
 VERSION     := 1.0
 BRANCH      := $(shell git branch --show-current)
 COMMIT      := $(shell git log --oneline | sed '2,10000000d' | cut -b 1-7)
-PLATFORM    ?= 2
 
 # Release vs Debug
 RELEASE ?= 0
@@ -73,37 +72,11 @@ else
 $(error This platform is not currently supported for building Hynis)
 endif
 
-# Define PLATFORM_NAME from PLATFORM
-ifeq ($(PLATFORM),2)
-PLATFORM_NAME := ios
-$(warning Set PLATFORM to 2, which is equal to iOS.)
-else ifeq ($(PLATFORM),3)
-PLATFORM_NAME := tvos
-$(warning Set PLATFORM to 3, which is equal to tvOS.)
-else ifeq ($(PLATFORM),6)
-PLATFORM_NAME := maccatalyst
-$(warning Set PLATFORM to 6, which is equal to Mac Catalyst.)
-else ifeq ($(PLATFORM),7)
-PLATFORM_NAME := iossimulator
-$(warning Set PLATFORM to 7, which is equal to iOS Simulator.)
-else ifeq ($(PLATFORM),8)
-PLATFORM_NAME := tvossimulator
-$(warning Set PLATFORM to 8, which is equal to tvOS Simulator.)
-else ifeq ($(PLATFORM),11)
-PLATFORM_NAME := xros
-$(warning Set PLATFORM to 11, which is equal to visionOS.)
-else ifeq ($(PLATFORM),12)
-PLATFORM_NAME := xrsimulator
-$(warning Set PLATFORM to 12, which is equal to visionOS Simulator.)
-else
-$(error PLATFORM is not valid.)
-endif
-
-POJAV_BUNDLE_DIR      ?= $(OUTPUTDIR)/Hynis.app
-POJAV_JRE8_DIR        ?= $(SOURCEDIR)/depends/java-8-openjdk
-POJAV_JRE17_DIR       ?= $(SOURCEDIR)/depends/java-17-openjdk
-POJAV_JRE21_DIR       ?= $(SOURCEDIR)/depends/java-21-openjdk
-POJAV_JRE25_DIR       ?= $(SOURCEDIR)/depends/java-25-openjdk
+HYNIS_BUNDLE_DIR      ?= $(OUTPUTDIR)/Hynis.app
+HYNIS_JRE8_DIR        ?= $(SOURCEDIR)/depends/java-8-openjdk
+HYNIS_JRE17_DIR       ?= $(SOURCEDIR)/depends/java-17-openjdk
+HYNIS_JRE21_DIR       ?= $(SOURCEDIR)/depends/java-21-openjdk
+HYNIS_JRE25_DIR       ?= $(SOURCEDIR)/depends/java-25-openjdk
 
 # Function to use later for checking dependencies
 METHOD_DEPCHECK   = $(shell $(1) >/dev/null 2>&1 && echo 1)
@@ -124,18 +97,6 @@ METHOD_DIRCHECK   = \
 		rm -rf $(1)/*; \
 	fi
 	
-# Function to change the platform on Mach-O files.
-# iOS = 2, tvOS = 3, iOS Simulator = 7, tvOS Simulator = 8, visionOS = 11, visionOS Simulator = 12
-# https://github.com/apple-oss-distributions/xnu/blob/main/EXTERNAL_HEADERS/mach-o/loader.h
-# TODO: Change Info.plist for visionOS 1.0
-METHOD_CHANGE_PLAT = \
-	if [ '$(1)' != '11' ] && [ '$(1)' != '12' ]; then \
-		vtool -arch arm64 -set-build-version $(1) 14.0 16.0 -replace -output $(2) $(2); \
-      ldid -S -M $(2); \
-	else \
-		vtool -arch arm64 -set-build-version $(1) 1.0 1.0 -replace -output $(2) $(2); \
-	fi \
-	
 # Function to package the application
 METHOD_PACKAGE = \
 	if [ '$(TROLLSTORE_JIT_ENT)' == '1' ]; then \
@@ -144,10 +105,10 @@ METHOD_PACKAGE = \
 		IPA_SUFFIX=".ipa"; \
 	fi; \
 	if [ '$(SLIMMED_ONLY)' = '0' ]; then \
-		zip --symlinks -r $(OUTPUTDIR)/com.congcq.Hynis-$(VERSION)-$(PLATFORM_NAME)$$IPA_SUFFIX Payload; \
+		zip --symlinks -r $(OUTPUTDIR)/com.congcq.Hynis-$(VERSION)$$IPA_SUFFIX Payload; \
 	fi; \
 	if [ '$(SLIMMED)' = '1' ] || [ '$(SLIMMED_ONLY)' = '1' ]; then \
-		zip --symlinks -r $(OUTPUTDIR)/com.congcq.Hynis.slimmed-$(VERSION)-$(PLATFORM_NAME)$$IPA_SUFFIX Payload --exclude='Payload/Hynis.app/java_runtimes/*'; \
+		zip --symlinks -r $(OUTPUTDIR)/com.congcq.Hynis.slimmed-$(VERSION)$$IPA_SUFFIX Payload --exclude='Payload/Hynis.app/java_runtimes/*'; \
 	fi
 
 # Function to download and unpack Java runtimes.
@@ -264,7 +225,6 @@ native:
 		..
 
 	cmake --build $(WORKINGDIR) --config $(CMAKE_BUILD_TYPE) -j$(JOBS)
-	#	--target awt_headless awt_xawt libOSMesaOverride.dylib tinygl4angle PojavLauncher
 	rm $(WORKINGDIR)/libawt_headless.dylib
 	echo '[Hynis v$(VERSION)] native - end'
 
@@ -285,10 +245,10 @@ jre: native
 	cd $(SOURCEDIR); \
 	rm -rf $(SOURCEDIR)/depends/java-*-openjdk/{ASSEMBLY_EXCEPTION,bin,include,jre,legal,LICENSE,man,THIRD_PARTY_README,lib/{ct.sym,jspawnhelper,libjsig.dylib,src.zip,tools.jar}}; \
 	$(call METHOD_DIRCHECK,$(OUTPUTDIR)/java_runtimes); \
-	cp -R $(POJAV_JRE8_DIR) $(OUTPUTDIR)/java_runtimes; \
-	cp -R $(POJAV_JRE17_DIR) $(OUTPUTDIR)/java_runtimes; \
-	cp -R $(POJAV_JRE21_DIR) $(OUTPUTDIR)/java_runtimes; \
-	cp -R $(POJAV_JRE25_DIR) $(OUTPUTDIR)/java_runtimes; \
+	cp -R $(HYNIS_JRE8_DIR) $(OUTPUTDIR)/java_runtimes; \
+	cp -R $(HYNIS_JRE17_DIR) $(OUTPUTDIR)/java_runtimes; \
+	cp -R $(HYNIS_JRE21_DIR) $(OUTPUTDIR)/java_runtimes; \
+	cp -R $(HYNIS_JRE25_DIR) $(OUTPUTDIR)/java_runtimes; \
 	cp $(WORKINGDIR)/libawt_xawt.dylib $(OUTPUTDIR)/java_runtimes/java-8-openjdk/lib; \
 	cp $(WORKINGDIR)/libawt_xawt.dylib $(OUTPUTDIR)/java_runtimes/java-17-openjdk/lib; \
 	cp $(WORKINGDIR)/libawt_xawt.dylib $(OUTPUTDIR)/java_runtimes/java-21-openjdk/lib; \
@@ -336,14 +296,10 @@ payload: native java jre assets
 		ldid -S$(SOURCEDIR)/entitlements.sideload.xml $(OUTPUTDIR)/Payload/Hynis.app/Hynis; \
 	fi
 	chmod -R 755 $(OUTPUTDIR)/Payload
-	if [ '$(PLATFORM)' != '2' ]; then \
-		$(call METHOD_MACHO,$(OUTPUTDIR)/Payload/Hynis.app,$(call METHOD_CHANGE_PLAT,$(PLATFORM),$$file)); \
-		$(call METHOD_MACHO,$(OUTPUTDIR)/java_runtimes,$(call METHOD_CHANGE_PLAT,$(PLATFORM),$$file)); \
-	fi
 	echo '[Hynis v$(VERSION)] payload - end'
 
 deploy:
-	echo '[Pojav v$(VERSION)] deploy - start'
+	echo '[Hynis v$(VERSION)] deploy - start'
 	cd $(OUTPUTDIR); \
 	if [ '$(IOS)' = '1' ]; then \
 		ldid -S $(WORKINGDIR)/Hynis.app || exit 1; \
@@ -359,9 +315,9 @@ deploy:
 		else \
 			$(call METHOD_PACKAGE); \
 			if [ '$(SLIMMED_ONLY)' = '0' ]; then \
-				open $(OUTPUTDIR)/com.congcq.Hynis-$(VERSION)-$(PLATFORM_NAME).ipa; \
+				open $(OUTPUTDIR)/com.congcq.hyns-$(VERSION).ipa; \
 			else \
-				open $(OUTPUTDIR)/com.congcq.Hynis.slimmed-$(VERSION)-$(PLATFORM_NAME).ipa; \
+				open $(OUTPUTDIR)/com.congcq.hynis.slimmed-$(VERSION).ipa; \
 			fi; \
 		fi; \
 	else \
