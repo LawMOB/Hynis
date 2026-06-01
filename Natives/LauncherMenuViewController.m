@@ -54,7 +54,7 @@
     
     self.isInitialVc = YES;
     
-    UIImageView *titleView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"AppLogo"]];
+    UIImageView *titleView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@""]]; // attension
     [titleView setContentMode:UIViewContentModeScaleAspectFit];
     self.navigationItem.titleView = titleView;
     [titleView sizeToFit];
