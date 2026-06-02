@@ -230,7 +230,7 @@ native:
 
 java:
 	echo '[Hynis v$(VERSION)] java - start'
-	$(MAKE) -C JavaApp -j$(JOBS) BOOTJDK=$(BOOTJDK)
+	$(MAKE) -C JavaApp -j2 BOOTJDK=$(BOOTJDK)
 	echo '[Hynis v$(VERSION)] java - end'
 
 jre: native
