@@ -250,6 +250,7 @@
 "preference.title.renderer.debug.angle"="ANGLE (1.17+) - Xuất ra OpenGL 3.3 (Core Profile, bị giới hạn), nhanh";
 "preference.title.renderer.debug.auto"="Tự động: holy gl4es hoặc MobileGlues";
 "preference.title.renderer.debug.gl4es"="holy gl4es - Xuất ra OpenGL 2.1, nhanh";
+"preference.title.renderer.debug.ltw"="LTW (Thử nghiệm) - xuất ra OpenGL 3.0";
 "preference.title.renderer.debug.mobileglues"="MobileGlues (1.17+, Core Profile) - Xuất ra OpenGL 4.0";
 "preference.title.renderer.debug.zink"="Zink (Mesa 21.0) - Xuất ra OpenGL 4.1, chậm";
 "preference.title.renderer.release.angle"="ANGLE";

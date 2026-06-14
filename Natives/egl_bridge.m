@@ -1,4 +1,5 @@
 #import "SurfaceViewController.h"
+#include "ctxbridges/gl_bridge.h"
 
 #include "jni.h"
 #include <assert.h>
@@ -57,7 +58,10 @@ int pojavInitOpenGL() {
         setenv("POJAV_RENDERER", renderer.UTF8String, 1);
         set_gl_bridge_tbl();
     } else if ([renderer isEqualToString:@ RENDERER_NAME_MTL_ANGLE]) {
-        renderer = @RENDERER_NAME_MTL_ANGLE;
+        renderer = @ RENDERER_NAME_MTL_ANGLE;
+        set_gl_bridge_tbl();
+    } else if ([renderer isEqualToString:@ RENEDRER_NAME_LTW]) {
+        renderer = @ RENDERER_NAME_LTW;
         set_gl_bridge_tbl();
     } else if ([renderer isEqualToString:@ RENDERER_NAME_MOBILEGLUES]) {
         set_gl_bridge_tbl();
