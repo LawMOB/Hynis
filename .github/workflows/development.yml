@@ -12,18 +12,18 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Install dependencies
-        run: brew install temurin@8 ldid make
+        run: brew install temurin@8 ldid make cmake wget
           
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Checkout repository submodules
-        run: git submodule update --init --recursive
+        with:
+          submodules: recursive
 
       - name: Build
         run: |
           export PATH=/opt/procursus/bin:/opt/homebrew/bin:$PATH
           export SLIMMED=1
+          export PLATFORM="2" # Menambahkan variabel PLATFORM untuk menargetkan iOS
           gmake -j$(sysctl -n hw.ncpu) package
           gmake -j$(sysctl -n hw.ncpu) package TROLLSTORE_JIT_ENT=1
 
