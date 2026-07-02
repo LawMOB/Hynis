@@ -1,6 +1,7 @@
-name: Clone Repo to Path
+name: Setup MobileGlues and 3rdparty Submodules
 
-on: [push]
+on: 
+  workflow_dispatch:
 
 jobs:
   build:
@@ -13,19 +14,28 @@ jobs:
       - name: Checkout repository utama
         uses: actions/checkout@v4
 
-      - name: Clone MobileGlues Repository
+      - name: Initialize MobileGlues and Register Submodules
         run: |
           rm -rf Natives/external/MobileGlues
-          
           git clone https://github.com/MobileGL-Dev/MobileGlues.git Natives/external/MobileGlues
           
           rm -rf Natives/external/MobileGlues/.git
+          
+          rm -rf Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/*
+          
+          git submodule add https://github.com/KhronosGroup/SPIRV-Cross.git Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/SPIRV-Cross
+          git submodule add https://github.com/g-truc/glm.git Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/glm
+          git submodule add https://github.com/KhronosGroup/glslang.git Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/glslang
+          git submodule add https://github.com/google/perfetto.git Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/perfetto
+          git submodule add https://github.com/stbrumme/xxhash.git Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/xxhash
+          
+          git submodule update --init --recursive
           
       - name: Commit and Push Changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          git add Natives/external/MobileGlues/
+          git add .gitmodules Natives/external/MobileGlues/
           
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Clone and update MobileGlues repository [skip ci]" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Initialize MobileGlues and register 3rdparty submodules" && git push)
