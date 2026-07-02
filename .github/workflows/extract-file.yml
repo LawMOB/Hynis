@@ -12,8 +12,8 @@ jobs:
 
       - name: Extract MobileGlues.zip
         run: |
-          unzip -o Hynis/Natives/external/MobileGlues.zip -d Hynis/Natives/external/MobileGlues
+          unzip -o Natives/external/MobileGlues.zip -d Natives/external/MobileGlues
           
       - name: Verify extraction (Opsional - untuk mengecek isi folder)
         run: |
-          ls -la Hynis/Natives/external/MobileGlues
+          ls -la Natives/external/MobileGlues
