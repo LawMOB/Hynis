@@ -72,6 +72,21 @@
         }.mutableCopy
     }.mutableCopy;
 
+    // MobileGlues settings
+    defaults[@"mobileglues"] = @{
+        @"mg_fsr1": @"0",
+        @"mg_enable_angle": @"0",
+        @"mg_no_error": @"1",
+        @"mg_enable_ext_compute_shader": @NO,
+        @"mg_enable_ext_timer_query": @NO,
+        @"mg_enable_ext_dsa": @YES,
+        @"mg_custom_gl_version": @"0",
+        @"mg_multidraw_mode": @"4",
+        @"mg_angle_depth_clear_fix": @"0",
+        @"mg_hide_mg": @NO,
+        @"mg_glsl_cache_size": @(30)
+    }.mutableCopy;
+
     if (global) {
         // Preferences that cannot be isolated
         NSDictionary *general = @{
