@@ -77,6 +77,7 @@ HYNIS_JRE8_DIR        ?= $(SOURCEDIR)/depends/java-8-openjdk
 HYNIS_JRE17_DIR       ?= $(SOURCEDIR)/depends/java-17-openjdk
 HYNIS_JRE21_DIR       ?= $(SOURCEDIR)/depends/java-21-openjdk
 HYNIS_JRE25_DIR       ?= $(SOURCEDIR)/depends/java-25-openjdk
+MOBILEGLUES_DIR       ?= $(SOURCEDIR)/Natives/external/MobileGlues/MobileGlues-cpp
 
 # Function to use later for checking dependencies
 METHOD_DEPCHECK   = $(shell $(1) >/dev/null 2>&1 && echo 1)
@@ -208,7 +209,25 @@ check:
 		$(info $(shell printf "%-20s" "$(v)") = $(value $(v)))) \
 	)
 
-native:
+dep_mg:
+	echo '[Hynis v$(VERSION)] dep_mg - start'
+	mkdir -p $(WORKINGDIR)/mobileglues
+	cd $(WORKINGDIR)/mobileglues && cmake \
+		-DMACOS="1" \
+		-DCMAKE_CROSSCOMPILING=true \
+		-DCMAKE_SYSTEM_NAME=Darwin \
+		-DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+		-DCMAKE_OSX_SYSROOT="$(SDKPATH)" \
+		-DCMAKE_OSX_ARCHITECTURES=arm64 \
+		-DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
+		-DCMAKE_C_FLAGS="-arch arm64" \
+		$(MOBILEGLUES_DIR)
+
+	cmake --build $(WORKINGDIR)/mobileglues --config RelWithDebInfo -j$(JOBS) --target mobileglues
+	cp $(WORKINGDIR)/mobileglues/libmobileglues.dylib $(WORKINGDIR)/libmobileglues.dylib
+	echo '[Hynis v$(VERSION)] dep_mg - end'
+
+native: dep_mg
 	echo '[Hynis v$(VERSION)] native - start'
 	mkdir -p $(WORKINGDIR)
 	cd $(WORKINGDIR) && cmake . \
@@ -271,7 +290,7 @@ assets:
 	fi
 	echo '[Hynis v$(VERSION)] assets - end'
 
-payload: native java jre assets
+payload: native dep_mg java jre assets
 	echo '[Hynis v$(VERSION)] payload - start'
 	#$(call METHOD_DIRCHECK,$(WORKINGDIR)/Hynis.app/libs/lwjgl)
 	$(call METHOD_DIRCHECK,$(WORKINGDIR)/Hynis.app/libs_caciocavallo)
