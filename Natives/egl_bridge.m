@@ -19,6 +19,8 @@
 #include "ctxbridges/osmesa_internal.h"
 #include "utils.h"
 
+#import "MobileGluesConfig.h"
+
 int clientAPI;
 
 void JNI_LWJGL_changeRenderer(const char* value_c) {
@@ -64,6 +66,7 @@ int pojavInitOpenGL() {
         set_gl_bridge_tbl();
     } else if ([renderer isEqualToString:@ RENDERER_NAME_MOBILEGLUES]) {
         set_gl_bridge_tbl();
+        writeMobileGluesConfig();
     } else if ([renderer hasPrefix:@"libOSMesa"]) {
         setenv("GALLIUM_DRIVER","zink",1);
         set_osm_bridge_tbl();
@@ -90,6 +93,7 @@ void pojavSetWindowHint(int hint, int value) {
             default:
                 setenv("POJAV_RENDERER", RENDERER_NAME_MOBILEGLUES, 1);
                 JNI_LWJGL_changeRenderer(RENDERER_NAME_MOBILEGLUES);
+                writeMobileGluesConfig();
                 break;
         }
     }
