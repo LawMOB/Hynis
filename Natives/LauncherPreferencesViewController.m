@@ -44,7 +44,7 @@
     self.hasDetail = YES;
     self.prefDetailVisible = self.navigationController == nil;
     
-    self.prefSections = @[@"general", @"video", @"control", @"java", @"debug"];
+    self.prefSections = @[@"general", @"video", @"mobileglues", @"control", @"java", @"debug"];
 
     self.rendererKeys = getRendererKeys(NO);
     self.rendererList = getRendererNames(NO);
@@ -226,6 +226,109 @@
               @"enableCondition": ^BOOL() {
                   return getPrefBool(@"video.allow_microphone") && whenNotInGame();
               }
+            }
+        ], @[
+            // MobileGlues renderer settings
+            @{@"icon": @"cpu"},
+            @{@"key": @"mg_fsr1",
+              @"hasDetail": @YES,
+              @"icon": @"square.dashed",
+              @"type": self.typePickField,
+              @"pickKeys": @[@"0", @"1", @"2", @"3", @"4"],
+              @"pickList": @[
+                  localize(@"preference.title.mg_fsr1-disabled", nil),
+                  localize(@"preference.title.mg_fsr1-ultra", nil),
+                  localize(@"preference.title.mg_fsr1-quality", nil),
+                  localize(@"preference.title.mg_fsr1-balanced", nil),
+                  localize(@"preference.title.mg_fsr1-performance", nil)
+              ]
+            },
+            @{@"key": @"mg_custom_gl_version",
+              @"hasDetail": @YES,
+              @"icon": @"number",
+              @"type": self.typePickField,
+              @"pickKeys": @[@"0", @"32", @"33", @"40", @"41", @"42", @"43", @"44", @"45", @"46"],
+              @"pickList": @[
+                  localize(@"preference.title.mg_gl_version-default", nil),
+                  @"3.2", @"3.3", @"4.0", @"4.1", @"4.2",
+                  @"4.3", @"4.4", @"4.5", @"4.6"
+              ]
+            },
+            @{@"key": @"mg_multidraw_mode",
+              @"hasDetail": @YES,
+              @"icon": @"square.split.2x2",
+              @"type": self.typePickField,
+              @"pickKeys": @[@"0", @"1", @"2", @"3", @"4", @"5"],
+              @"pickList": @[
+                  localize(@"preference.title.mg_multidraw-auto", nil),
+                  localize(@"preference.title.mg_multidraw-indirect", nil),
+                  localize(@"preference.title.mg_multidraw-basevertex", nil),
+                  localize(@"preference.title.mg_multidraw-multidrawindirect", nil),
+                  localize(@"preference.title.mg_multidraw-drawelements", nil),
+                  localize(@"preference.title.mg_multidraw-compute", nil)
+              ]
+            },
+            @{@"key": @"mg_glsl_cache_size",
+              @"hasDetail": @YES,
+              @"icon": @"archivebox",
+              @"type": self.typeSlider,
+              @"min": @(0),
+              @"max": @(200)
+            },
+            @{@"key": @"mg_enable_ext_compute_shader",
+              @"hasDetail": @YES,
+              @"icon": @"function",
+              @"type": self.typeSwitch
+            },
+            @{@"key": @"mg_enable_ext_timer_query",
+              @"hasDetail": @YES,
+              @"icon": @"timer",
+              @"type": self.typeSwitch
+            },
+            @{@"key": @"mg_enable_ext_dsa",
+              @"hasDetail": @YES,
+              @"icon": @"arrow.triangle.branch",
+              @"type": self.typeSwitch
+            },
+            @{@"key": @"mg_hide_mg",
+              @"hasDetail": @YES,
+              @"icon": @"eye.slash",
+              @"type": self.typeSwitch
+            },
+            @{@"key": @"mg_enable_angle",
+              @"hasDetail": @YES,
+              @"icon": @"rectangle.2.swap",
+              @"type": self.typePickField,
+              @"pickKeys": @[@"0", @"1", @"2", @"3"],
+              @"pickList": @[
+                  localize(@"preference.title.mg_angle-disablepossible", nil),
+                  localize(@"preference.title.mg_angle-enablepossible", nil),
+                  localize(@"preference.title.mg_angle-forcedisable", nil),
+                  localize(@"preference.title.mg_angle-forceenable", nil)
+              ]
+            },
+            @{@"key": @"mg_no_error",
+              @"hasDetail": @YES,
+              @"icon": @"exclamationmark.triangle",
+              @"type": self.typePickField,
+              @"pickKeys": @[@"0", @"1", @"2", @"3"],
+              @"pickList": @[
+                  localize(@"preference.title.mg_noerror-auto", nil),
+                  localize(@"preference.title.mg_noerror-disable", nil),
+                  localize(@"preference.title.mg_noerror-level1", nil),
+                  localize(@"preference.title.mg_noerror-level2", nil)
+              ]
+            },
+            @{@"key": @"mg_angle_depth_clear_fix",
+              @"hasDetail": @YES,
+              @"icon": @"clear",
+              @"type": self.typePickField,
+              @"pickKeys": @[@"0", @"1", @"2"],
+              @"pickList": @[
+                  localize(@"preference.title.mg_depthfix-disabled", nil),
+                  localize(@"preference.title.mg_depthfix-mode1", nil),
+                  localize(@"preference.title.mg_depthfix-mode2", nil)
+              ]
             }
         ], @[
             // Control settings
