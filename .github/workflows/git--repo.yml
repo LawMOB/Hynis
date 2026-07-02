@@ -22,12 +22,15 @@ jobs:
           rm -rf Natives/external/MobileGlues/.git
           
           rm -rf Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/*
+          rm -rf Natives/external/MobileGlues/MobileGlues-cpp/include/FastSTL
           
           git submodule add https://github.com/KhronosGroup/SPIRV-Cross.git Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/SPIRV-Cross
           git submodule add https://github.com/g-truc/glm.git Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/glm
           git submodule add https://github.com/KhronosGroup/glslang.git Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/glslang
           git submodule add https://github.com/google/perfetto.git Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/perfetto
           git submodule add https://github.com/stbrumme/xxhash.git Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/xxhash
+          
+          git submodule add https://github.com/MobileGL-Dev/FastSTL.git Natives/external/MobileGlues/MobileGlues-cpp/include/FastSTL
           
           git submodule update --init --recursive
           
@@ -38,4 +41,4 @@ jobs:
           
           git add .gitmodules Natives/external/MobileGlues/
           
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Initialize MobileGlues and register 3rdparty submodules" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Initialize MobileGlues and register submodules including FastSTL" && git push)
