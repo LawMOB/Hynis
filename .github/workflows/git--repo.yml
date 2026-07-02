@@ -16,21 +16,23 @@ jobs:
 
       - name: Initialize MobileGlues and Register Submodules
         run: |
+          git rm -rf --cached Natives/external/MobileGlues/MobileGlues-cpp/3rdparty || true
+          git rm -rf --cached Natives/external/MobileGlues/MobileGlues-cpp/include/FastSTL || true
+          
           rm -rf Natives/external/MobileGlues
           git clone https://github.com/MobileGL-Dev/MobileGlues.git Natives/external/MobileGlues
-          
           rm -rf Natives/external/MobileGlues/.git
           
           rm -rf Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/*
           rm -rf Natives/external/MobileGlues/MobileGlues-cpp/include/FastSTL
           
-          git submodule add https://github.com/KhronosGroup/SPIRV-Cross.git Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/SPIRV-Cross
-          git submodule add https://github.com/g-truc/glm.git Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/glm
-          git submodule add https://github.com/KhronosGroup/glslang.git Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/glslang
-          git submodule add https://github.com/google/perfetto.git Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/perfetto
-          git submodule add https://github.com/stbrumme/xxhash.git Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/xxhash
+          git submodule add --force https://github.com/KhronosGroup/SPIRV-Cross.git Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/SPIRV-Cross
+          git submodule add --force https://github.com/g-truc/glm.git Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/glm
+          git submodule add --force https://github.com/KhronosGroup/glslang.git Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/glslang
+          git submodule add --force https://github.com/google/perfetto.git Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/perfetto
+          git submodule add --force https://github.com/stbrumme/xxhash.git Natives/external/MobileGlues/MobileGlues-cpp/3rdparty/xxhash
           
-          git submodule add https://github.com/MobileGL-Dev/FastSTL.git Natives/external/MobileGlues/MobileGlues-cpp/include/FastSTL
+          git submodule add --force https://github.com/MobileGL-Dev/FastSTL.git Natives/external/MobileGlues/MobileGlues-cpp/include/FastSTL
           
           git submodule update --init --recursive
           
