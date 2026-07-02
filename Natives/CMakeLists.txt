@@ -162,6 +162,7 @@ add_executable(Hynis
   LauncherSplitViewController.m
   MinecraftResourceDownloadTask.m
   MinecraftResourceUtils.m
+  MobileGluesConfig.m
   PickTextField.m
   PLLogOutputView.m
   PLPickerView.m
