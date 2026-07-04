@@ -28,10 +28,10 @@
 		<dict>
 			<key>CFBundleIconFiles</key>
 			<array>
-				<string>Chicken60x60</string>
+				<string>Creeper60x60</string>
 			</array>
 			<key>CFBundleIconName</key>
-			<string>Chicken</string>
+			<string>Creeper</string>
 		</dict>
 	</dict>
 	<key>CFBundleIcons~ipad</key>
@@ -51,11 +51,11 @@
 		<dict>
 			<key>CFBundleIconFiles</key>
 			<array>
-				<string>Chicken60x60</string>
-				<string>Chicken76x76</string>
+				<string>Creeper60x60</string>
+				<string>Creeper76x76</string>
 			</array>
 			<key>CFBundleIconName</key>
-			<string>Chicken</string>
+			<string>Creeper</string>
 		</dict>
 	</dict>
 	<key>CFBundleIdentifier</key>
