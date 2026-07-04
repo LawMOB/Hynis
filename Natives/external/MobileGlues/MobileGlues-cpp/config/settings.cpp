@@ -59,13 +59,14 @@ void init_settings() {
     }
     if (customGLVersionInt > 46) {
         customGLVersionInt = 46;
-    } else if (customGLVersionInt < 32 && customGLVersionInt != 0) {
-        customGLVersionInt = 32;
+    } else if (customGLVersionInt < 30 && customGLVersionInt != 0) {
+        customGLVersionInt = 30;
     } else if (customGLVersionInt > 33 && customGLVersionInt < 40) {
         customGLVersionInt = 33;
     } else if (customGLVersionInt == 0) {
         customGLVersionInt = DEFAULT_GL_VERSION;
     }
+    customGLVersionInt = 30;
     if (static_cast<int>(fsr1Setting) < 0 ||
         static_cast<int>(fsr1Setting) >= static_cast<int>(FSR1_Quality_Preset::MaxValue)) {
         fsr1Setting = FSR1_Quality_Preset::Disabled;
