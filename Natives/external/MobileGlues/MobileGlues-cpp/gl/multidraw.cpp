@@ -158,16 +158,19 @@ void mg_glMultiDrawElementsBaseVertex_drawelements(GLenum mode, GLsizei* counts,
         const GLvoid* currentIndices = indices[i];
         GLint currentBaseVertex = basevertex[i];
 
-        size_t indexSize;
+        // always widen indices to 32-bit before applying baseVertex to avoid overflow
+        size_t indexSize = sizeof(GLuint);
+        GLenum drawType = GL_UNSIGNED_INT;
+        size_t srcIndexSize;
         switch (type) {
         case GL_UNSIGNED_INT:
-            indexSize = sizeof(GLuint);
+            srcIndexSize = sizeof(GLuint);
             break;
         case GL_UNSIGNED_SHORT:
-            indexSize = sizeof(GLushort);
+            srcIndexSize = sizeof(GLushort);
             break;
         case GL_UNSIGNED_BYTE:
-            indexSize = sizeof(GLubyte);
+            srcIndexSize = sizeof(GLubyte);
             break;
         default:
             return;
@@ -186,7 +189,7 @@ void mg_glMultiDrawElementsBaseVertex_drawelements(GLenum mode, GLsizei* counts,
 
         if (prevElementBuffer != 0) {
             GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevElementBuffer);
-            srcData = GLES.glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, (GLintptr)currentIndices, currentCount * indexSize,
+            srcData = GLES.glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, (GLintptr)currentIndices, currentCount * srcIndexSize,
                                             GL_MAP_READ_BIT);
 
             if (!srcData) {
@@ -198,20 +201,21 @@ void mg_glMultiDrawElementsBaseVertex_drawelements(GLenum mode, GLsizei* counts,
             srcData = (void*)currentIndices;
         }
 
+        // widen to 32-bit unconditionally so index + baseVertex can never overflow.
         switch (type) {
         case GL_UNSIGNED_INT:
             for (int j = 0; j < currentCount; ++j) {
-                ((GLuint*)tempIndices)[j] = ((GLuint*)srcData)[j] + currentBaseVertex;
+                ((GLuint*)tempIndices)[j] = ((GLuint*)srcData)[j] + (GLuint)currentBaseVertex;
             }
             break;
         case GL_UNSIGNED_SHORT:
             for (int j = 0; j < currentCount; ++j) {
-                ((GLushort*)tempIndices)[j] = ((GLushort*)srcData)[j] + currentBaseVertex;
+                ((GLuint*)tempIndices)[j] = (GLuint)((GLushort*)srcData)[j] + (GLuint)currentBaseVertex;
             }
             break;
         case GL_UNSIGNED_BYTE:
             for (int j = 0; j < currentCount; ++j) {
-                ((GLubyte*)tempIndices)[j] = ((GLubyte*)srcData)[j] + currentBaseVertex;
+                ((GLuint*)tempIndices)[j] = (GLuint)((GLubyte*)srcData)[j] + (GLuint)currentBaseVertex;
             }
             break;
         }
@@ -223,7 +227,7 @@ void mg_glMultiDrawElementsBaseVertex_drawelements(GLenum mode, GLsizei* counts,
         GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tempBuffer);
         GLES.glBufferData(GL_ELEMENT_ARRAY_BUFFER, currentCount * indexSize, tempIndices, GL_STREAM_DRAW);
         free(tempIndices);
-        GLES.glDrawElements(mode, currentCount, type, 0);
+        GLES.glDrawElements(mode, currentCount, drawType, 0);
 
         GLES.glDeleteBuffers(1, &tempBuffer);
     }
