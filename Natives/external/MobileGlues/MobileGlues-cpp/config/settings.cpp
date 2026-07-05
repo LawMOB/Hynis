@@ -353,6 +353,13 @@ void init_settings_post() {
                       (g_gles_caps.major == 3 && g_gles_caps.minor >= 2) || (g_gles_caps.major > 3);
     bool indirect = (g_gles_caps.major == 3 && g_gles_caps.minor >= 1) || (g_gles_caps.major > 3);
 
+    if (global_settings.ext_compute_shader && !indirect) {
+        LOG_V("[MobileGlues] enableExtComputeShader was requested but this context is GLES %d.%d "
+              "(need >= 3.1). Disabling compute shader advertisement.",
+              g_gles_caps.major, g_gles_caps.minor)
+        global_settings.ext_compute_shader = false;
+    }
+
     switch (global_settings.multidraw_mode) {
     case multidraw_mode_t::PreferIndirect:
         LOG_V("multidrawMode = PreferIndirect")
@@ -390,8 +397,16 @@ void init_settings_post() {
         break;
     case multidraw_mode_t::Compute:
         LOG_V("multidrawMode = Compute")
-        global_settings.multidraw_mode = multidraw_mode_t::Compute;
-        LOG_V("    -> Compute (OK)")
+        if (indirect) { // indirect == (major > 3) || (major == 3 && minor >= 1)
+            global_settings.multidraw_mode = multidraw_mode_t::Compute;
+            LOG_V("    -> Compute (OK)")
+        } else if (basevertex) {
+            global_settings.multidraw_mode = multidraw_mode_t::PreferBaseVertex;
+            LOG_V("    -> BaseVertex (Compute requires GLES 3.1+, falling back)")
+        } else {
+            global_settings.multidraw_mode = multidraw_mode_t::DrawElements;
+            LOG_V("    -> DrawElements (Compute requires GLES 3.1+, falling back)")
+        }
         break;
     case multidraw_mode_t::Auto:
     default:
