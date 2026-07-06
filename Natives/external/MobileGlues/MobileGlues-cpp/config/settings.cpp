@@ -59,14 +59,13 @@ void init_settings() {
     }
     if (customGLVersionInt > 46) {
         customGLVersionInt = 46;
-    } else if (customGLVersionInt < 30 && customGLVersionInt != 0) {
-        customGLVersionInt = 30;
+    } else if (customGLVersionInt < 32 && customGLVersionInt != 0) {
+        customGLVersionInt = 32;
     } else if (customGLVersionInt > 33 && customGLVersionInt < 40) {
         customGLVersionInt = 33;
     } else if (customGLVersionInt == 0) {
         customGLVersionInt = DEFAULT_GL_VERSION;
     }
-    customGLVersionInt = 30;
     if (static_cast<int>(fsr1Setting) < 0 ||
         static_cast<int>(fsr1Setting) >= static_cast<int>(FSR1_Quality_Preset::MaxValue)) {
         fsr1Setting = FSR1_Quality_Preset::Disabled;
@@ -353,13 +352,6 @@ void init_settings_post() {
                       (g_gles_caps.major == 3 && g_gles_caps.minor >= 2) || (g_gles_caps.major > 3);
     bool indirect = (g_gles_caps.major == 3 && g_gles_caps.minor >= 1) || (g_gles_caps.major > 3);
 
-    if (global_settings.ext_compute_shader && !indirect) {
-        LOG_V("[MobileGlues] enableExtComputeShader was requested but this context is GLES %d.%d "
-              "(need >= 3.1). Disabling compute shader advertisement.",
-              g_gles_caps.major, g_gles_caps.minor)
-        global_settings.ext_compute_shader = false;
-    }
-
     switch (global_settings.multidraw_mode) {
     case multidraw_mode_t::PreferIndirect:
         LOG_V("multidrawMode = PreferIndirect")
@@ -397,16 +389,8 @@ void init_settings_post() {
         break;
     case multidraw_mode_t::Compute:
         LOG_V("multidrawMode = Compute")
-        if (indirect) { // indirect == (major > 3) || (major == 3 && minor >= 1)
-            global_settings.multidraw_mode = multidraw_mode_t::Compute;
-            LOG_V("    -> Compute (OK)")
-        } else if (basevertex) {
-            global_settings.multidraw_mode = multidraw_mode_t::PreferBaseVertex;
-            LOG_V("    -> BaseVertex (Compute requires GLES 3.1+, falling back)")
-        } else {
-            global_settings.multidraw_mode = multidraw_mode_t::DrawElements;
-            LOG_V("    -> DrawElements (Compute requires GLES 3.1+, falling back)")
-        }
+        global_settings.multidraw_mode = multidraw_mode_t::Compute;
+        LOG_V("    -> Compute (OK)")
         break;
     case multidraw_mode_t::Auto:
     default:
