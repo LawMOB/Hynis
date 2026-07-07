@@ -101,6 +101,7 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
     gl/multidraw.cpp
     gl/mg.cpp
     gl/buffer.cpp
+    gl/sync_guard.cpp
     gl/getter.cpp
     gl/pixel.cpp
     gl/random_string_gen.cpp
