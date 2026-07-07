@@ -150,6 +150,12 @@ void mg_glMultiDrawElementsBaseVertex_drawelements(GLenum mode, GLsizei* counts,
     prepareForDraw();
     GLint prevElementBuffer;
     GLES.glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &prevElementBuffer);
+  
+    static GLuint scratchBuffer = 0;
+
+    if (scratchBuffer == 0) {
+        GLES.glGenBuffers(1, &scratchBuffer);
+    }
 
     for (GLsizei i = 0; i < primcount; ++i) {
         if (counts[i] <= 0) continue;
@@ -173,35 +179,30 @@ void mg_glMultiDrawElementsBaseVertex_drawelements(GLenum mode, GLsizei* counts,
             srcIndexSize = sizeof(GLubyte);
             break;
         default:
-            return;
+            continue;
         }
-
-        GLuint tempBuffer;
-        GLES.glGenBuffers(1, &tempBuffer);
-        GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tempBuffer);
 
         void* srcData = nullptr;
         void* tempIndices = malloc(currentCount * indexSize);
         if (!tempIndices) {
-            GLES.glDeleteBuffers(1, &tempBuffer);
             continue;
         }
 
         if (prevElementBuffer != 0) {
             GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevElementBuffer);
+            // avoid the implicit GPU wait
             srcData = GLES.glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, (GLintptr)currentIndices, currentCount * srcIndexSize,
-                                            GL_MAP_READ_BIT);
+                                            GL_MAP_READ_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
 
             if (!srcData) {
                 free(tempIndices);
-                GLES.glDeleteBuffers(1, &tempBuffer);
                 continue;
             }
         } else {
             srcData = (void*)currentIndices;
         }
 
-        // widen to 32-bit unconditionally so index + baseVertex can never overflow.
+        // widen to 32-bit unconditionally so index + baseVertex can never overflow
         switch (type) {
         case GL_UNSIGNED_INT:
             for (int j = 0; j < currentCount; ++j) {
@@ -224,12 +225,13 @@ void mg_glMultiDrawElementsBaseVertex_drawelements(GLenum mode, GLsizei* counts,
             GLES.glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
         }
 
-        GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tempBuffer);
-        GLES.glBufferData(GL_ELEMENT_ARRAY_BUFFER, currentCount * indexSize, tempIndices, GL_STREAM_DRAW);
+        GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, scratchBuffer);
+
+        size_t neededSize = (size_t)currentCount * indexSize;
+
+        GLES.glBufferData(GL_ELEMENT_ARRAY_BUFFER, neededSize, tempIndices, GL_STREAM_DRAW);
         free(tempIndices);
         GLES.glDrawElements(mode, currentCount, drawType, 0);
-
-        GLES.glDeleteBuffers(1, &tempBuffer);
     }
 
     GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevElementBuffer);
