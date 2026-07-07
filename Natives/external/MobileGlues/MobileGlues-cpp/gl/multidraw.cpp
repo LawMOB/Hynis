@@ -192,7 +192,7 @@ void mg_glMultiDrawElementsBaseVertex_drawelements(GLenum mode, GLsizei* counts,
             GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevElementBuffer);
             // avoid the implicit GPU wait
             srcData = GLES.glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, (GLintptr)currentIndices, currentCount * srcIndexSize,
-                                            GL_MAP_READ_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+                                            GL_MAP_READ_BIT);
 
             if (!srcData) {
                 free(tempIndices);
