@@ -1,0 +1,30 @@
+name: Build MobileGlues Only
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-mobileglues:
+    name: Build MobileGlues dylib
+    runs-on: macos-latest
+
+    steps:
+      - name: Install dependencies
+        run: brew install make cmake
+          
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build MobileGlues
+        run: |
+          export PATH=/opt/procursus/bin:/opt/homebrew/bin:$PATH
+          export PLATFORM="2" 
+          gmake -j$(sysctl -n hw.ncpu) dep_mg
+
+      - name: Upload mobileglues.dylib
+        uses: actions/upload-artifact@v4
+        with:
+          name: libmobileglues.dylib
+          path: Natives/build/libmobileglues.dylib
