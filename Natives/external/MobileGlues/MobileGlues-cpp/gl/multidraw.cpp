@@ -150,7 +150,7 @@ void mg_glMultiDrawElementsBaseVertex_drawelements(GLenum mode, GLsizei* counts,
     prepareForDraw();
     GLint prevElementBuffer;
     GLES.glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &prevElementBuffer);
-  
+
     static GLuint scratchBuffer = 0;
 
     if (scratchBuffer == 0) {
