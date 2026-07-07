@@ -702,6 +702,25 @@ void glBufferData(GLenum target, GLsizeiptr size, const void* data, GLenum usage
     CHECK_GL_ERROR
 }
 
+void glBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, const void* data) {
+    LOG()
+    LOG_D("glBufferSubData, target = %s, offset = %d, size = %d, data = 0x%x", glEnumToString(target), offset, size,
+          data)
+
+    GLint boundSize = 0;
+    GLES.glGetBufferParameteriv(target, GL_BUFFER_SIZE, &boundSize);
+
+    if (offset == 0 && boundSize > 0 && (GLsizeiptr)boundSize == size) {
+        GLint usage = GL_STREAM_DRAW;
+        GLES.glGetBufferParameteriv(target, GL_BUFFER_USAGE, &usage);
+        GLES.glBufferData(target, size, data, (GLenum)usage);
+    } else {
+        GLES.glBufferSubData(target, offset, size, data);
+    }
+
+    CHECK_GL_ERROR
+}
+
 void* glMapBuffer(GLenum target, GLenum access) {
     LOG()
     LOG_D("glMapBuffer, target = %s, access = %s", glEnumToString(target), glEnumToString(access))
