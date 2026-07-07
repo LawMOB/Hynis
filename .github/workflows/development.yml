@@ -56,3 +56,9 @@ jobs:
         with:
           name: java_runtimes
           path: artifacts/java_runtimes/*
+
+      - name: Upload mobileglues.dylib
+        uses: actions/upload-artifact@v4
+        with:
+          name: libmobileglues.dylib
+          path: Natives/build/libmobileglues.dylib
