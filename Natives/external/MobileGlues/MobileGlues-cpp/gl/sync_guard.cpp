@@ -8,6 +8,9 @@
 #include "sync_guard.h"
 #include "../gles/loader.h"
 #include "log.h"
+#include "mg.h"
+
+#define DEBUG 0
 
 #include <chrono>
 #include <future>
