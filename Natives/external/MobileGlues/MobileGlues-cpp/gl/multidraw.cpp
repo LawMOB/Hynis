@@ -148,13 +148,15 @@ void mg_glMultiDrawElementsBaseVertex_drawelements(GLenum mode, GLsizei* counts,
     LOG()
     void prepareForDraw();
     prepareForDraw();
-    GLint prevElementBuffer;
+    GLint prevElementBuffer = 0;
     GLES.glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &prevElementBuffer);
 
-    static GLuint scratchBuffer = 0;
+    // double-buffered scratch IBOs to avoid stalls
+    static GLuint scratchBuffers[2] = {0, 0};
+    static int scratchIdx = 0;
 
-    if (scratchBuffer == 0) {
-        GLES.glGenBuffers(1, &scratchBuffer);
+    if (scratchBuffers[0] == 0) {
+        GLES.glGenBuffers(2, scratchBuffers);
     }
 
     for (GLsizei i = 0; i < primcount; ++i) {
@@ -190,9 +192,10 @@ void mg_glMultiDrawElementsBaseVertex_drawelements(GLenum mode, GLsizei* counts,
 
         if (prevElementBuffer != 0) {
             GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevElementBuffer);
-            // avoid the implicit GPU wait
-            srcData = GLES.glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, (GLintptr)currentIndices, currentCount * srcIndexSize,
-                                            GL_MAP_READ_BIT);
+            // keep this synchronized
+            // double-buffering already hides most of the stall
+            srcData = GLES.glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, (GLintptr)currentIndices,
+                                            currentCount * srcIndexSize, GL_MAP_READ_BIT);
 
             if (!srcData) {
                 free(tempIndices);
@@ -225,10 +228,13 @@ void mg_glMultiDrawElementsBaseVertex_drawelements(GLenum mode, GLsizei* counts,
             GLES.glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
         }
 
-        GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, scratchBuffer);
+        // ping-pong between the two scratch buffers to avoid implicit sync waits
+        scratchIdx = 1 - scratchIdx;
+        GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, scratchBuffers[scratchIdx]);
 
         size_t neededSize = (size_t)currentCount * indexSize;
 
+        // orphan the old storage
         GLES.glBufferData(GL_ELEMENT_ARRAY_BUFFER, neededSize, tempIndices, GL_STREAM_DRAW);
         free(tempIndices);
         GLES.glDrawElements(mode, currentCount, drawType, 0);
