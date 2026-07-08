@@ -113,7 +113,7 @@ void prepare_indirect_buffer(const GLsizei* counts, GLenum type, const void* con
 
     auto* pcmds = (draw_elements_indirect_command_t*)GLES.glMapBufferRange(
         GL_DRAW_INDIRECT_BUFFER, 0, primcount * sizeof(draw_elements_indirect_command_t),
-        GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+        GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
 
     GLsizei elementSize;
     switch (type) {
@@ -148,100 +148,103 @@ void mg_glMultiDrawElementsBaseVertex_drawelements(GLenum mode, GLsizei* counts,
     LOG()
     void prepareForDraw();
     prepareForDraw();
+    
     GLint prevElementBuffer = 0;
     GLES.glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &prevElementBuffer);
 
-    // double-buffered scratch IBOs to avoid stalls
-    static GLuint scratchBuffers[2] = {0, 0};
-    static int scratchIdx = 0;
-
-    if (scratchBuffers[0] == 0) {
-        GLES.glGenBuffers(2, scratchBuffers);
+    size_t totalSize = 0;
+    for (GLsizei i = 0; i < primcount; ++i) {
+        if (counts[i] > 0) {
+            totalSize += (size_t)counts[i] * sizeof(GLuint);
+        }
+    }
+    
+    if (totalSize == 0) {
+        GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevElementBuffer);
+        return;
     }
 
+    static GLuint scratchBuffer = 0;
+    if (scratchBuffer == 0) {
+        GLES.glGenBuffers(1, &scratchBuffer);
+    }
+    
+    void* tempIndices = malloc(totalSize);
+    if (!tempIndices) {
+        GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevElementBuffer);
+        return;
+    }
+
+    size_t offset = 0;
     for (GLsizei i = 0; i < primcount; ++i) {
         if (counts[i] <= 0) continue;
-
+        
         GLsizei currentCount = counts[i];
         const GLvoid* currentIndices = indices[i];
         GLint currentBaseVertex = basevertex[i];
-
-        // always widen indices to 32-bit before applying baseVertex to avoid overflow
-        size_t indexSize = sizeof(GLuint);
-        GLenum drawType = GL_UNSIGNED_INT;
+        
         size_t srcIndexSize;
         switch (type) {
-        case GL_UNSIGNED_INT:
-            srcIndexSize = sizeof(GLuint);
-            break;
-        case GL_UNSIGNED_SHORT:
-            srcIndexSize = sizeof(GLushort);
-            break;
-        case GL_UNSIGNED_BYTE:
-            srcIndexSize = sizeof(GLubyte);
-            break;
-        default:
-            continue;
+            case GL_UNSIGNED_INT: srcIndexSize = sizeof(GLuint); break;
+            case GL_UNSIGNED_SHORT: srcIndexSize = sizeof(GLushort); break;
+            case GL_UNSIGNED_BYTE: srcIndexSize = sizeof(GLubyte); break;
+            default: continue;
         }
-
+        
         void* srcData = nullptr;
-        void* tempIndices = malloc(currentCount * indexSize);
-        if (!tempIndices) {
-            continue;
-        }
-
         if (prevElementBuffer != 0) {
             GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevElementBuffer);
-            // keep this synchronized
-            // double-buffering already hides most of the stall
             srcData = GLES.glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, (GLintptr)currentIndices,
                                             currentCount * srcIndexSize, GL_MAP_READ_BIT);
-
             if (!srcData) {
-                free(tempIndices);
+                memset((char*)tempIndices + offset * sizeof(GLuint), 0, currentCount * sizeof(GLuint));
+                offset += currentCount;
                 continue;
             }
         } else {
             srcData = (void*)currentIndices;
         }
-
-        // widen to 32-bit unconditionally so index + baseVertex can never overflow
+        
+        GLuint* dst = (GLuint*)tempIndices + offset;
         switch (type) {
-        case GL_UNSIGNED_INT:
-            for (int j = 0; j < currentCount; ++j) {
-                ((GLuint*)tempIndices)[j] = ((GLuint*)srcData)[j] + (GLuint)currentBaseVertex;
-            }
-            break;
-        case GL_UNSIGNED_SHORT:
-            for (int j = 0; j < currentCount; ++j) {
-                ((GLuint*)tempIndices)[j] = (GLuint)((GLushort*)srcData)[j] + (GLuint)currentBaseVertex;
-            }
-            break;
-        case GL_UNSIGNED_BYTE:
-            for (int j = 0; j < currentCount; ++j) {
-                ((GLuint*)tempIndices)[j] = (GLuint)((GLubyte*)srcData)[j] + (GLuint)currentBaseVertex;
-            }
-            break;
+            case GL_UNSIGNED_INT:
+                for (int j = 0; j < currentCount; ++j) {
+                    dst[j] = ((GLuint*)srcData)[j] + (GLuint)currentBaseVertex;
+                }
+                break;
+            case GL_UNSIGNED_SHORT:
+                for (int j = 0; j < currentCount; ++j) {
+                    dst[j] = (GLuint)((GLushort*)srcData)[j] + (GLuint)currentBaseVertex;
+                }
+                break;
+            case GL_UNSIGNED_BYTE:
+                for (int j = 0; j < currentCount; ++j) {
+                    dst[j] = (GLuint)((GLubyte*)srcData)[j] + (GLuint)currentBaseVertex;
+                }
+                break;
         }
-
+        
         if (prevElementBuffer != 0) {
             GLES.glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
         }
-
-        // ping-pong between the two scratch buffers to avoid implicit sync waits
-        scratchIdx = 1 - scratchIdx;
-        GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, scratchBuffers[scratchIdx]);
-
-        size_t neededSize = (size_t)currentCount * indexSize;
-
-        // orphan the old storage
-        GLES.glBufferData(GL_ELEMENT_ARRAY_BUFFER, neededSize, tempIndices, GL_STREAM_DRAW);
-        free(tempIndices);
-        GLES.glDrawElements(mode, currentCount, drawType, 0);
+        
+        offset += currentCount;
     }
-
+    
+    GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, scratchBuffer);
+    GLES.glBufferData(GL_ELEMENT_ARRAY_BUFFER, totalSize, tempIndices, GL_STREAM_DRAW);
+    free(tempIndices);
+    
+    offset = 0;
+    for (GLsizei i = 0; i < primcount; ++i) {
+        if (counts[i] > 0) {
+            GLES.glDrawElements(mode, counts[i], GL_UNSIGNED_INT, (void*)(offset * sizeof(GLuint)));
+            offset += counts[i];
+        }
+    }
+    
     GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevElementBuffer);
-
+  
     CHECK_GL_ERROR
 }
 
