@@ -10,6 +10,7 @@
 
 #include "../includes.h"
 #include "glcorearb.h"
+#include <GL/gl.h>
 
 #ifdef __cplusplus
 extern "C"
