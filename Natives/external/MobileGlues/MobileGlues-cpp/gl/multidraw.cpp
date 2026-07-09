@@ -164,15 +164,27 @@ void mg_glMultiDrawElementsBaseVertex_drawelements(GLenum mode, GLsizei* counts,
         return;
     }
 
-    static GLuint scratchBuffer = 0;
-    if (scratchBuffer == 0) {
-        GLES.glGenBuffers(1, &scratchBuffer);
+    static GLuint scratchBuffers[2] = {0, 0};
+    static int scratchIdx = 0;
+    if (scratchBuffers[0] == 0) {
+        GLES.glGenBuffers(2, scratchBuffers);
     }
+    scratchIdx = 1 - scratchIdx;
     
     void* tempIndices = malloc(totalSize);
     if (!tempIndices) {
         GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevElementBuffer);
         return;
+    }
+
+    void* mappedBuffer = nullptr;
+    GLint bufferSize = 0;
+    if (prevElementBuffer != 0) {
+        GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevElementBuffer);
+        GLES.glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &bufferSize);
+        if (bufferSize > 0) {
+            mappedBuffer = GLES.glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, 0, bufferSize, GL_MAP_READ_BIT);
+        }
     }
 
     size_t offset = 0;
@@ -192,17 +204,15 @@ void mg_glMultiDrawElementsBaseVertex_drawelements(GLenum mode, GLsizei* counts,
         }
         
         void* srcData = nullptr;
-        if (prevElementBuffer != 0) {
-            GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevElementBuffer);
-            srcData = GLES.glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, (GLintptr)currentIndices,
-                                            currentCount * srcIndexSize, GL_MAP_READ_BIT);
-            if (!srcData) {
-                memset((char*)tempIndices + offset * sizeof(GLuint), 0, currentCount * sizeof(GLuint));
-                offset += currentCount;
-                continue;
-            }
-        } else {
+        if (prevElementBuffer != 0 && mappedBuffer) {
+
+            srcData = (void*)((uintptr_t)mappedBuffer + (uintptr_t)currentIndices);
+        } else if (prevElementBuffer == 0) {
             srcData = (void*)currentIndices;
+        } else {
+            memset((char*)tempIndices + offset * sizeof(GLuint), 0, currentCount * sizeof(GLuint));
+            offset += currentCount;
+            continue;
         }
         
         GLuint* dst = (GLuint*)tempIndices + offset;
@@ -224,14 +234,14 @@ void mg_glMultiDrawElementsBaseVertex_drawelements(GLenum mode, GLsizei* counts,
                 break;
         }
         
-        if (prevElementBuffer != 0) {
-            GLES.glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
-        }
-        
         offset += currentCount;
     }
     
-    GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, scratchBuffer);
+    if (prevElementBuffer != 0 && mappedBuffer) {
+        GLES.glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+    }
+    
+    GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, scratchBuffers[scratchIdx]);
     GLES.glBufferData(GL_ELEMENT_ARRAY_BUFFER, totalSize, tempIndices, GL_STREAM_DRAW);
     free(tempIndices);
     
