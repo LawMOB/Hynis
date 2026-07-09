@@ -228,15 +228,16 @@ void glDrawElementsBaseVertex(GLenum mode, GLsizei count, GLenum type, const voi
             break;
         }
 
-        GLuint tempBuffer;
-        GLES.glGenBuffers(1, &tempBuffer);
-        GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tempBuffer);
+        static GLuint scratchBuffer = 0;
+        if (scratchBuffer == 0) {
+            GLES.glGenBuffers(1, &scratchBuffer);
+        }
+        GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, scratchBuffer);
         GLES.glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * indexSize, tempIndices, GL_STREAM_DRAW);
         free(tempIndices);
 
         GLES.glDrawElements(mode, count, type, 0);
 
-        GLES.glDeleteBuffers(1, &tempBuffer);
         GLES.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, prevElementBuffer);
 
         CHECK_GL_ERROR
