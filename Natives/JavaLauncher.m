@@ -224,7 +224,10 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
             // workaround only applies to 1.20.2+
             glLibName = RENDERER_NAME_MOBILEGLUES;
         }
-        margv[++margc] = [NSString stringWithFormat:@"-Dorg.lwjgl.opengl.libname=%s", glLibName].UTF8String;
+        const char *openglLibName = (strcmp(glLibName, RENDERER_NAME_VULKAN) == 0)
+            ? RENDERER_NAME_MOBILEGLUES
+            : glLibName;
+        margv[++margc] = [NSString stringWithFormat:@"-Dorg.lwjgl.opengl.libname=%s", openglLibName].UTF8String;
     }
 
     NSString *librariesPath = [NSString stringWithFormat:@"%@/libs", NSBundle.mainBundle.bundlePath];
