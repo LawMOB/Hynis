@@ -67,9 +67,11 @@ int pojavInitOpenGL() {
     } else if ([renderer isEqualToString:@ RENDERER_NAME_MOBILEGLUES]) {
         set_gl_bridge_tbl();
         writeMobileGluesConfig();
-    } else if ([renderer hasPrefix:@"libOSMesa"]) {
+        } else if ([renderer hasPrefix:@"libOSMesa"]) {
         setenv("GALLIUM_DRIVER","zink",1);
         set_osm_bridge_tbl();
+    } else if ([renderer isEqualToString:@ RENDERER_NAME_VULKAN]) {
+        set_vk_bridge_tbl();
     }
     JNI_LWJGL_changeRenderer(renderer.UTF8String);
     // Preload renderer library
