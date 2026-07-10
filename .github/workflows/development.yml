@@ -32,33 +32,47 @@ jobs:
         with:
           name: com.congcq.hynis
           path: artifacts/com.congcq.hynis-*.ipa
+          retention-days: 1
 
       - name: Upload regular tipa
         uses: actions/upload-artifact@v4
         with:
           name: com.congcq.hynis-trollstore
           path: artifacts/com.congcq.hynis-*.tipa
+          retention-days: 1
 
       - name: Upload slimmed ipa
         uses: actions/upload-artifact@v4
         with:
           name: com.congcq.hynis.slimmed
           path: artifacts/com.congcq.hynis.slimmed-*.ipa
+          retention-days: 1
 
       - name: Upload slimmed tipa
         uses: actions/upload-artifact@v4
         with:
           name: com.congcq.hynis.slimmed-trollstore
           path: artifacts/com.congcq.hynis.slimmed-*.tipa
+          retention-days: 1
 
       - name: Upload jre
         uses: actions/upload-artifact@v4
         with:
           name: java_runtimes
           path: artifacts/java_runtimes/*
+          retention-days: 1
 
       - name: Upload mobileglues.dylib
         uses: actions/upload-artifact@v4
         with:
           name: libmobileglues.dylib
           path: Natives/build/libmobileglues.dylib
+          retention-days: 1
+
+      - name: Delete old workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          retain_days: 1
+          keep_minimum_runs: 5
