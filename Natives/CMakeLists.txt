@@ -113,6 +113,7 @@ add_executable(Hynis
 
   ctxbridges/gl_bridge.m
   ctxbridges/osm_bridge.m
+  ctxbridges/vk_bridge.m
  
   customcontrols/ControlButton.m
   customcontrols/ControlDrawer.m
