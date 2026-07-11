@@ -16,6 +16,7 @@
 #import "JavaLauncher.h"
 #import "LauncherPreferences.h"
 #import "PLProfiles.h"
+#import "MobileGluesConfig.h"
 
 #define fm NSFileManager.defaultManager
 
@@ -139,6 +140,9 @@ int launchJVM(NSString *username, id launchTarget, int width, int height, int mi
         NSString *renderer = [PLProfiles resolveKeyForCurrentProfile:@"renderer"];
         NSLog(@"[JavaLauncher] RENDERER is set to %@\n", renderer);
         setenv("POJAV_RENDERER", renderer.UTF8String, 1);
+        if ([renderer isEqualToString:@ RENDERER_NAME_MOBILEGLUES]) {
+            writeMobileGluesConfig();
+        }
         // Setup gameDir
         gameDir = [NSString stringWithFormat:@"%s/instances/%@/%@",
             getenv("POJAV_HOME"), getPrefObject(@"general.game_directory"),
