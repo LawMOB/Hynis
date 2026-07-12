@@ -18,16 +18,98 @@ global_settings_t global_settings;
 
 void init_settings() {
 #if defined(__APPLE__)
+    // Read config
+    int success = initialized;
+    if (!success) {
+        success = config_refresh();
+        if (!success) {
+            LOG_V("Failed to load config. Use default config.")
+        }
+    }
+
+    NoErrorConfig noErrorConfig =
+        success ? static_cast<NoErrorConfig>(config_get_int("enableNoError")) : NoErrorConfig::Level1;
+    bool enableExtComputeShader = success ? (config_get_int("enableExtComputeShader") > 0) : false;
+    bool enableExtTimerQuery = success ? (config_get_int("enableExtTimerQuery") > 0) : false;
+    bool enableExtDirectStateAccess = success ? (config_get_int("enableExtDirectStateAccess") > 0) : true;
+    AngleDepthClearFixMode angleDepthClearFixMode =
+        success ? static_cast<AngleDepthClearFixMode>(config_get_int("angleDepthClearFixMode"))
+                : AngleDepthClearFixMode::Disabled;
+    int customGLVersionInt = success ? config_get_int("customGLVersion") : DEFAULT_GL_VERSION;
+    FSR1_Quality_Preset fsr1Setting =
+        success ? static_cast<FSR1_Quality_Preset>(config_get_int("fsr1Setting")) : FSR1_Quality_Preset::Disabled;
+    HideMGEnvLevel hideMGEnvLevel =
+        success ? static_cast<HideMGEnvLevel>(config_get_int("hideMGEnvLevel")) : HideMGEnvLevel::Disabled;
+
+    if (customGLVersionInt < 0) {
+        customGLVersionInt = 0;
+    }
+
+    size_t maxGlslCacheSize = 30 * 1024 * 1024;
+    if (success && config_get_int("maxGlslCacheSize") >= 0) {
+        maxGlslCacheSize = config_get_int("maxGlslCacheSize") * 1024 * 1024;
+    }
+
+    if (static_cast<int>(noErrorConfig) < 0 || static_cast<int>(noErrorConfig) > 3) {
+        noErrorConfig = NoErrorConfig::Level1;
+    }
+    if (static_cast<int>(angleDepthClearFixMode) < 0 ||
+        static_cast<int>(angleDepthClearFixMode) >= static_cast<int>(AngleDepthClearFixMode::MaxValue)) {
+        angleDepthClearFixMode = AngleDepthClearFixMode::Disabled;
+    }
+    if (customGLVersionInt > 46) {
+        customGLVersionInt = 46;
+    } else if (customGLVersionInt < 32 && customGLVersionInt != 0) {
+        customGLVersionInt = 32;
+    } else if (customGLVersionInt > 33 && customGLVersionInt < 40) {
+        customGLVersionInt = 33;
+    } else if (customGLVersionInt == 0) {
+        customGLVersionInt = DEFAULT_GL_VERSION;
+    }
+    if (static_cast<int>(fsr1Setting) < 0 ||
+        static_cast<int>(fsr1Setting) >= static_cast<int>(FSR1_Quality_Preset::MaxValue)) {
+        fsr1Setting = FSR1_Quality_Preset::Disabled;
+    }
+    if (static_cast<int>(hideMGEnvLevel) < 0 ||
+        static_cast<int>(hideMGEnvLevel) >= static_cast<int>(HideMGEnvLevel::MaxValue)) {
+        hideMGEnvLevel = HideMGEnvLevel::Disabled;
+    }
+
+    Version customGLVersion(customGLVersionInt);
+
+    LOG_V("MG_DIR_PATH = %s", mg_directory_path ? mg_directory_path : "(default)")
+
+    // No ANGLE
     global_settings.angle = AngleMode::Disabled;
-    global_settings.ignore_error = IgnoreErrorLevel::Partial;
-    global_settings.ext_compute_shader = false;
-    global_settings.max_glsl_cache_size = 30 * 1024 * 1024;
-    global_settings.multidraw_mode = multidraw_mode_t::DrawElements;
-    global_settings.angle_depth_clear_fix_mode = AngleDepthClearFixMode::Disabled;
-    global_settings.ext_direct_state_access = true;
-    global_settings.custom_gl_version = {0, 0, 0}; // will go default
-    global_settings.fsr1_setting = FSR1_Quality_Preset::Disabled;
-    global_settings.hide_mg_env_level = HideMGEnvLevel::Disabled;
+    global_settings.buffer_coherent_as_flush = true;
+
+    switch (noErrorConfig) {
+    case NoErrorConfig::Level1:
+        global_settings.ignore_error = IgnoreErrorLevel::Partial;
+        LOG_D("Error ignoring: Level 1 (Partial)");
+        break;
+
+    case NoErrorConfig::Level2:
+        global_settings.ignore_error = IgnoreErrorLevel::Full;
+        LOG_D("Error ignoring: Level 2 (Full)");
+        break;
+
+    case NoErrorConfig::Auto:
+    case NoErrorConfig::Disable:
+    default:
+        global_settings.ignore_error = IgnoreErrorLevel::None;
+        LOG_D("Error ignoring: Disabled");
+        break;
+    }
+
+    global_settings.ext_compute_shader = enableExtComputeShader;
+    global_settings.ext_timer_query = enableExtTimerQuery;
+    global_settings.ext_direct_state_access = enableExtDirectStateAccess;
+    global_settings.max_glsl_cache_size = maxGlslCacheSize;
+    global_settings.angle_depth_clear_fix_mode = angleDepthClearFixMode;
+    global_settings.custom_gl_version = customGLVersion;
+    global_settings.fsr1_setting = fsr1Setting;
+    global_settings.hide_mg_env_level = hideMGEnvLevel;
 
 #else
 
