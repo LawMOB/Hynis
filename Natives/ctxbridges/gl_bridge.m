@@ -99,7 +99,8 @@ gl_render_window_t* gl_init_context(gl_render_window_t *share) {
     }
 
     const EGLint ctx_attribs[] = {
-        EGL_CONTEXT_CLIENT_VERSION, 3,
+        EGL_CONTEXT_MAJOR_VERSION, 3,
+        EGL_CONTEXT_MINOR_VERSION, 1,
         EGL_NONE
     };
     bundle->context = handle.eglCreateContext(g_EglDisplay, bundle->config, share ? share->context : EGL_NO_CONTEXT, ctx_attribs);
